@@ -1,3 +1,5 @@
+<img width="2366" height="1342" alt="strideregister" src="https://github.com/user-attachments/assets/12dec78b-0d55-4994-8895-f5a6d2384995" />
+
 # Stride App
 
 Stride App is a full-stack productivity and task-management web application.
