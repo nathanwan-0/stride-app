@@ -1,50 +1,170 @@
 'use client'
 
-import { Center } from '@chakra-ui/react'
-import { Auth } from '@saas-ui/auth'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import {
+  Box,
+  Center,
+  Stack,
+  Text,
+  Input,
+  Button,
+  Heading,
+  useToast,
+} from '@chakra-ui/react'
 import { Link } from '@saas-ui/react'
+import { NextPage } from 'next'
+import NextLink from 'next/link'
+import dynamic from 'next/dynamic'
+import { Box as ChakraBox } from '@chakra-ui/react'
+
 import { BackgroundGradient } from '../../../components/gradients/background-gradient'
 import { PageTransition } from '../../../components/motion/page-transition'
 import { Section } from '../../../components/section'
-import { NextPage } from 'next'
-import dynamic from 'next/dynamic'
-import { Box } from '@chakra-ui/react'
 
-// Dynamically import icons to avoid server-side function serialization
+// Placeholder OAuth buttons
 const FaGoogle = dynamic(() => import('react-icons/fa').then(mod => mod.FaGoogle), {
   ssr: false,
-  loading: () => <Box boxSize="20px" bg="gray.200" borderRadius="sm" />
+  loading: () => <ChakraBox boxSize="20px" bg="gray.200" borderRadius="sm" />,
 })
 
 const FaGithub = dynamic(() => import('react-icons/fa').then(mod => mod.FaGithub), {
   ssr: false,
-  loading: () => <Box boxSize="20px" bg="gray.200" borderRadius="sm" />
+  loading: () => <ChakraBox boxSize="20px" bg="gray.200" borderRadius="sm" />,
 })
 
-const providers = {
-  google: {
-    name: 'Google',
-    icon: FaGoogle,
-  },
-  github: {
-    name: 'Github',
-    icon: FaGithub,
-    variant: 'solid',
-  },
-}
-
 const Login: NextPage = () => {
-  return (
-    <Section height="calc(100vh - 200px)" innerWidth="container.sm">
-      <BackgroundGradient zIndex="-1" />
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const toast = useToast()
+  const router = useRouter()
 
-      <Center height="100%" pt="20">
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      const res = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        toast({
+          duration: 4000,
+          isClosable: true,
+          render: () => (
+            <Box
+              color="white"
+              bg="primary.500"
+              px={4}
+              py={3}
+              borderRadius="md"
+              boxShadow="md"
+            >
+              Logged in successfully!
+            </Box>
+          ),
+        })
+        setEmail('')
+        setPassword('')
+        // save token to localStorage
+        localStorage.setItem('token', data.token)
+        router.push('/kanban')
+      } else {
+        toast({
+          duration: 4000,
+          isClosable: true,
+          render: () => (
+            <Box
+              color="white"
+              bg="primary.500"
+              px={4}
+              py={3}
+              borderRadius="md"
+              boxShadow="md"
+            >
+              <Text fontWeight="bold">Login failed</Text>
+              <Text>{data.message}</Text>
+            </Box>
+          ),
+        })
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Error',
+        description: err.message,
+        status: 'error',
+        duration: 4000,
+        isClosable: true,
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Section height="100vh" innerWidth="container.sm">
+      <BackgroundGradient zIndex="-1" />
+      <Center height="100%">
         <PageTransition width="100%">
-          <Auth
-            view="login"
-            providers={providers}
-            signupLink={<Link href="/signup">Sign up</Link>}
-          />
+          <Box>
+            <Heading mb="6">Log In</Heading>
+
+            {/* OAuth buttons */}
+            <Stack spacing="4" mb="6">
+              <Button leftIcon={<FaGoogle />} colorScheme="gray" variant="outline">
+                Log in with Google
+              </Button>
+              <Button leftIcon={<FaGithub />} colorScheme="gray" variant="outline">
+                Log in with GitHub
+              </Button>
+            </Stack>
+
+            <Text textAlign="center" my="4" color="gray.400">
+              — or continue with email —
+            </Text>
+
+            {/* Email/password form */}
+            <form onSubmit={handleLogin}>
+              <Stack spacing="4">
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+                <Input
+                  placeholder="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <Button
+                  type="submit"
+                  colorScheme="blue"
+                  isLoading={loading}
+                  loadingText="Logging in..."
+                >
+                  Log In
+                </Button>
+              </Stack>
+            </form>
+
+            <Text mt="6" fontSize="sm">
+              Don't have an account?{' '}
+              <Link href="/signup" color="blue.400">
+                Sign up
+              </Link>
+            </Text>
+          </Box>
         </PageTransition>
       </Center>
     </Section>
