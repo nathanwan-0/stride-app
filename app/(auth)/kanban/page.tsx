@@ -103,31 +103,55 @@ export default function KanbanPage() {
   }
 
   const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result
-    if (!destination) return
+  const { source, destination } = result
+  if (!destination) return
 
-    const sourceColIndex = columns.findIndex((c) => c.id === source.droppableId)
-    const destColIndex = columns.findIndex((c) => c.id === destination.droppableId)
+  // if dropped in the same position, do nothing
+  if (
+    source.droppableId === destination.droppableId &&
+    source.index === destination.index
+  ) {
+    return
+  }
 
-    const sourceCol = columns[sourceColIndex]
-    const destCol = columns[destColIndex]
-    const task = sourceCol.tasks[source.index]
+  const sourceColIndex = columns.findIndex((c) => c.id === source.droppableId)
+  const destColIndex = columns.findIndex((c) => c.id === destination.droppableId)
 
-    const newSourceTasks = Array.from(sourceCol.tasks)
-    newSourceTasks.splice(source.index, 1)
+  const sourceCol = columns[sourceColIndex]
+  const destCol = columns[destColIndex]
 
-    const newDestTasks = Array.from(destCol.tasks)
-    newDestTasks.splice(destination.index, 0, task)
+  // if same column, then reorder tasks
+  if (sourceCol === destCol) {
+    const newTasks = Array.from(sourceCol.tasks)
+    const [movedTask] = newTasks.splice(source.index, 1)
+    newTasks.splice(destination.index, 0, movedTask)
+
+    const updatedColumns = columns.map((col, idx) =>
+      idx === sourceColIndex ? { ...col, tasks: newTasks } : col
+    )
+
+    setColumns(updatedColumns)
+    saveBoard(updatedColumns)
+    return
+    }
+
+    // if different columns, then move between them
+    const sourceTasks = Array.from(sourceCol.tasks)
+    const [movedTask] = sourceTasks.splice(source.index, 1)
+
+    const destTasks = Array.from(destCol.tasks)
+    destTasks.splice(destination.index, 0, movedTask)
 
     const updatedColumns = columns.map((col, idx) => {
-      if (idx === sourceColIndex) return { ...col, tasks: newSourceTasks }
-      if (idx === destColIndex) return { ...col, tasks: newDestTasks }
+      if (idx === sourceColIndex) return { ...col, tasks: sourceTasks }
+      if (idx === destColIndex) return { ...col, tasks: destTasks }
       return col
     })
 
     setColumns(updatedColumns)
     saveBoard(updatedColumns)
   }
+
 
   return (
     <Box w="100vw" h="100vh" overflow="hidden" bg={bg} display="flex" flexDirection="column" m={0} p={0}>
@@ -200,6 +224,13 @@ export default function KanbanPage() {
                                   c.id === col.id ? { ...c, newTask: e.target.value } : c
                                 )
                                 setColumns(updatedColumns)
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addTask(col.id)
+                                  e.currentTarget.focus()
+                                }
                               }}
                             />
                             <Button
