@@ -16,6 +16,7 @@ import { NextPage } from 'next'
 import NextLink from 'next/link'
 import dynamic from 'next/dynamic'
 import { Box as ChakraBox } from '@chakra-ui/react'
+import { CheckCircle, AlertTriangle } from 'lucide-react'
 
 import { Features } from '../../../components/features'
 import { BackgroundGradient } from '../../../components/gradients/background-gradient'
@@ -54,32 +55,80 @@ const Signup: NextPage = () => {
       const data = await res.json()
 
       if (res.ok) {
-        toast({
-          title: 'Account created successfully!',
-          description: 'You can now log in.',
-          status: 'success',
-          duration: 4000,
-          isClosable: true,
-        })
-        setEmail('')
-        setPassword('')
-      } else {
-        toast({
-          title: 'Signup failed',
-          description: data.message,
-          status: 'error',
-          duration: 4000,
-          isClosable: true,
-        })
-      }
-    } catch (err: any) {
       toast({
-        title: 'Error',
-        description: err.message,
-        status: 'error',
         duration: 4000,
         isClosable: true,
+        render: () => (
+          <Box
+            bg="primary.500"
+            color="white"
+            px={4}
+            py={3}
+            borderRadius="md"
+            boxShadow="lg"
+            display="flex"
+            alignItems="center"
+            gap={3}
+          >
+            <CheckCircle size={22} />
+            <Box>
+              <Text fontWeight="bold">Account created successfully!</Text>
+              <Text>You can now log in.</Text>
+            </Box>
+          </Box>
+        ),
       })
+      setEmail('')
+      setPassword('')
+    } else {
+      toast({
+        duration: 4000,
+        isClosable: true,
+        render: () => (
+          <Box
+            bg="red.500"
+            color="white"
+            px={4}
+            py={3}
+            borderRadius="md"
+            boxShadow="lg"
+            display="flex"
+            alignItems="center"
+            gap={3}
+          >
+            <AlertTriangle size={22} />
+            <Box>
+              <Text fontWeight="bold">Signup failed</Text>
+              <Text>{data.message}</Text>
+            </Box>
+          </Box>
+        ),
+      })
+    }
+  } catch (err: any) {
+    toast({
+      duration: 4000,
+      isClosable: true,
+      render: () => (
+        <Box
+          bg="red.600"
+          color="white"
+          px={4}
+          py={3}
+          borderRadius="md"
+          boxShadow="lg"
+          display="flex"
+          alignItems="center"
+          gap={3}
+        >
+          <AlertTriangle size={22} />
+          <Box>
+            <Text fontWeight="bold">Error</Text>
+            <Text>{err.message}</Text>
+          </Box>
+        </Box>
+      ),
+    })
     } finally {
       setLoading(false)
     }

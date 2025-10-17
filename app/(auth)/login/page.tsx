@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { Link } from '@saas-ui/react'
 import { NextPage } from 'next'
-import NextLink from 'next/link'
+import { CheckCircle, AlertTriangle } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { Box as ChakraBox } from '@chakra-ui/react'
 
@@ -55,54 +55,83 @@ const Login: NextPage = () => {
       const data = await res.json()
 
       if (res.ok) {
-        toast({
-          duration: 4000,
-          isClosable: true,
-          render: () => (
-            <Box
-              color="white"
-              bg="primary.500"
-              px={4}
-              py={3}
-              borderRadius="md"
-              boxShadow="md"
-            >
-              Logged in successfully!
+      toast({
+        duration: 4000,
+        isClosable: true,
+        render: () => (
+          <Box
+            bg="primary.500"
+            color="white"
+            px={4}
+            py={3}
+            borderRadius="md"
+            boxShadow="lg"
+            display="flex"
+            alignItems="center"
+            gap={3}
+          >
+            <CheckCircle size={22} />
+            <Box>
+              <Text fontWeight="bold">Logged in successfully!</Text>
+              <Text>Welcome back!</Text>
             </Box>
-          ),
-        })
-        setEmail('')
-        setPassword('')
-        // save token to localStorage
-        localStorage.setItem('token', data.token)
-        router.push('/kanban')
-      } else {
-        toast({
-          duration: 4000,
-          isClosable: true,
-          render: () => (
-            <Box
-              color="white"
-              bg="primary.500"
-              px={4}
-              py={3}
-              borderRadius="md"
-              boxShadow="md"
-            >
+          </Box>
+        ),
+      })
+
+      setEmail('')
+      setPassword('')
+      localStorage.setItem('token', data.token)
+      router.push('/kanban')
+    } else {
+      toast({
+        duration: 4000,
+        isClosable: true,
+        render: () => (
+          <Box
+            bg="red.500"
+            color="white"
+            px={4}
+            py={3}
+            borderRadius="md"
+            boxShadow="lg"
+            display="flex"
+            alignItems="center"
+            gap={3}
+          >
+            <AlertTriangle size={22} />
+            <Box>
               <Text fontWeight="bold">Login failed</Text>
               <Text>{data.message}</Text>
             </Box>
-          ),
-        })
-      }
-    } catch (err: any) {
-      toast({
-        title: 'Error',
-        description: err.message,
-        status: 'error',
-        duration: 4000,
-        isClosable: true,
+          </Box>
+        ),
       })
+    }
+  } catch (err: any) {
+    toast({
+      duration: 4000,
+      isClosable: true,
+      render: () => (
+        <Box
+          bg="red.600"
+          color="white"
+          px={4}
+          py={3}
+          borderRadius="md"
+          boxShadow="lg"
+          display="flex"
+          alignItems="center"
+          gap={3}
+        >
+          <AlertTriangle size={22} />
+          <Box>
+            <Text fontWeight="bold">Error</Text>
+            <Text>{err.message}</Text>
+          </Box>
+        </Box>
+      ),
+    })
     } finally {
       setLoading(false)
     }
