@@ -1,8 +1,11 @@
+// models/Kanban.js
 import mongoose from 'mongoose'
 
 const taskSchema = new mongoose.Schema({
   id: String,
   title: String,
+  deadline: { type: String, default: '' },
+  priority: { type: String, enum: ['Low', 'Medium', 'High'], default: 'Medium' },
 })
 
 const columnSchema = new mongoose.Schema({

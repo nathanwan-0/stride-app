@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Box,
   Flex,
@@ -34,6 +35,7 @@ interface Column {
 
 export default function KanbanPage() {
   const toast = useToast()
+  const router = useRouter()
   const [columns, setColumns] = useState<Column[]>([])
   const token = localStorage.getItem('token')
   const bg = useColorModeValue('gray.50', 'gray.900')
@@ -103,42 +105,35 @@ export default function KanbanPage() {
   }
 
   const onDragEnd = (result: DropResult) => {
-  const { source, destination } = result
-  if (!destination) return
+    const { source, destination } = result
+    if (!destination) return
 
-  // if dropped in the same position, do nothing
-  if (
-    source.droppableId === destination.droppableId &&
-    source.index === destination.index
-  ) {
-    return
-  }
-
-  const sourceColIndex = columns.findIndex((c) => c.id === source.droppableId)
-  const destColIndex = columns.findIndex((c) => c.id === destination.droppableId)
-
-  const sourceCol = columns[sourceColIndex]
-  const destCol = columns[destColIndex]
-
-  // if same column, then reorder tasks
-  if (sourceCol === destCol) {
-    const newTasks = Array.from(sourceCol.tasks)
-    const [movedTask] = newTasks.splice(source.index, 1)
-    newTasks.splice(destination.index, 0, movedTask)
-
-    const updatedColumns = columns.map((col, idx) =>
-      idx === sourceColIndex ? { ...col, tasks: newTasks } : col
-    )
-
-    setColumns(updatedColumns)
-    saveBoard(updatedColumns)
-    return
+    if (source.droppableId === destination.droppableId && source.index === destination.index) {
+      return
     }
 
-    // if different columns, then move between them
+    const sourceColIndex = columns.findIndex((c) => c.id === source.droppableId)
+    const destColIndex = columns.findIndex((c) => c.id === destination.droppableId)
+
+    const sourceCol = columns[sourceColIndex]
+    const destCol = columns[destColIndex]
+
+    if (sourceCol === destCol) {
+      const newTasks = Array.from(sourceCol.tasks)
+      const [movedTask] = newTasks.splice(source.index, 1)
+      newTasks.splice(destination.index, 0, movedTask)
+
+      const updatedColumns = columns.map((col, idx) =>
+        idx === sourceColIndex ? { ...col, tasks: newTasks } : col
+      )
+
+      setColumns(updatedColumns)
+      saveBoard(updatedColumns)
+      return
+    }
+
     const sourceTasks = Array.from(sourceCol.tasks)
     const [movedTask] = sourceTasks.splice(source.index, 1)
-
     const destTasks = Array.from(destCol.tasks)
     destTasks.splice(destination.index, 0, movedTask)
 
@@ -152,12 +147,31 @@ export default function KanbanPage() {
     saveBoard(updatedColumns)
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    router.push('/')
+  }
 
   return (
     <Box w="100vw" h="100vh" overflow="hidden" bg={bg} display="flex" flexDirection="column" m={0} p={0}>
       <PageTransition display="flex" flex="1" w="100%" h="100%" alignItems="stretch" justifyContent="center">
         <Flex direction="column" flex="1" px={8} py={6} overflow="hidden" w="100%" h="100%">
-          <Heading mb={6}>Kanban Board</Heading>
+          {/* Header Section */}
+          <Flex justify="space-between" align="center" mb={6}>
+            <Heading>Kanban Board</Heading>
+            <HStack spacing={4}>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => router.push('/kanban/taskorganizer')}
+              >
+                Task Organizer
+              </Button>
+              <Button colorScheme="red" variant="outline" onClick={handleLogout}>
+                Log Out
+              </Button>
+            </HStack>
+          </Flex>
 
           <DragDropContext onDragEnd={onDragEnd}>
             <Flex gap={6} justify="flex-start" align="stretch" flex="1" w="100%" overflowX="auto" pb={4}>
