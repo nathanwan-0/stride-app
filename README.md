@@ -1,7 +1,7 @@
 <img width="2366" height="1342" alt="strideregister" src="https://github.com/user-attachments/assets/12dec78b-0d55-4994-8895-f5a6d2384995" />
 
 
-https://github.com/user-attachments/assets/83fedf4c-97e1-496b-86da-36b86c54f3d9
+
 
 
 # Stride App
